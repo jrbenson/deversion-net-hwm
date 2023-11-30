@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="src/index.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Jura:wght@500;700&family=PT+Sans+Narrow:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Homeworld Mobile</title>
+  </head>
+  <body>
+    <div class="layer" data-depth="0.7">
+      <div id="background"></div>
+    </div>
+    <div class="layer" data-depth="0.4">
+      <div id="ships"></div>
+    </div>
+    <div class="layer" data-depth="0.1">
+      <div id="main">
+        <div id="app">
+          <div class="logo">
+            <img width="256px" src="src/hw_logo.svg" alt="Homeworld Logo" />
+            <h1>Homeworld</h1>
+            <h2>Mobile</h2>
+          </div>
+          <ul class="links">
+            <li>
+              <a href="nimbus/" target="_blank"
+                >Nimbus Star Chart<br /><span class="subtle">View system details and signal locations</span></a
+              >
+            </li>
+            <li>
+              <a href="https://homeworldsource.net/" target="_blank"
+                >Homeworld Source<br /><span class="subtle">Guides and data tables</span></a
+              >
+            </li>
+            <li>
+              <a href="https://timers.homeworldwiki.com/" target="_blank"
+                >Timers<br /><span class="subtle">Timer countdowns for resets</span></a
+              >
+            </li>
+            <li>
+              <a href="https://jsd-hwm-community-tool.vercel.app/" target="_blank"
+                >Companion Tools<br /><span class="subtle">Tools for ship fitting and planning</span></a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="src/index.ts"></script>
+  </body>
+</html>
