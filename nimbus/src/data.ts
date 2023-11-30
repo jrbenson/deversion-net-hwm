@@ -4,7 +4,7 @@ import { Asteroid, Jovian, Planet, Signal, System, EnemyShip } from './system'
 // URL for retrieving the CSV data from Google Sheets
 const DATA_URL =
   'https://docs.google.com/spreadsheets/d/1eTCM4KNb7lv7mtFmMx9WVOud2pg7EnqcDP40n9S-5go/gviz/tq?tqx=out:csv&sheet=Systems%201.7'
-const LOCAL_DATA_URL = '/nimbus/data.csv'
+const LOCAL_DATA_URL = './data.csv'
 
 // Function that creates an inclusive array of numbers over a range with an increment
 function range(start: number, end: number, increment = 1) {
