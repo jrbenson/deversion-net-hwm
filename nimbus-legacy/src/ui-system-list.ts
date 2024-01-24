@@ -7,7 +7,6 @@ import iconJovian from '../ico-jovian.svg'
 import iconMining from '../ico-mining.svg'
 import iconStation from '../ico-station.svg'
 import iconBlank from '../ico-blank.svg'
-import iconBox from '../ico-box.svg'
 
 export class SystemList {
   element: HTMLElement
@@ -86,9 +85,10 @@ export class SystemList {
         let prevOffset = 0
         const header = item.querySelector('.header') as HTMLElement
         if (header) {
-          prevOffset = header.offsetHeight * 2.8
+          prevOffset = header.offsetHeight + header.offsetHeight * 0.2
         }
         this.element.scrollTo({ top: item.offsetTop - prevOffset, behavior: 'smooth' })
+        //this.element.scrollTop = item.offsetTop
       }
 
       if (userAction) {
@@ -107,17 +107,13 @@ export class SystemList {
       system.asteroids.length > 0 ? `<img class="icon" src="${iconMining}"/>` : `<img class="icon" src="${iconBlank}"/>`
     const jovianIndicatorHTML =
       system.jovians.length > 0 ? `<img class="icon" src="${iconJovian}"/>` : `<img class="icon" src="${iconBlank}"/>`
-    const boxesIndicatorHTML =
-      system.boxes.uncommon > 0 || system.boxes.rare > 0 || system.boxes.epic > 0
-        ? `<img class="icon" src="${iconBox}"/>`
-        : `<img class="icon" src="${iconBlank}"/>`
 
     let html = `
       <li data-id="${system.name}">
         <div class="header">
           <span class="name">${system.name}</span>
           <span class="summary">
-          ${boxesIndicatorHTML}${asteroidIndicatorHTML}${jovianIndicatorHTML}${stationIndicatorHTML}
+          ${asteroidIndicatorHTML}${jovianIndicatorHTML}${stationIndicatorHTML}
             <span class="tier-wrapper">
               <span class="tier">${numberToRomanNumeral(system.tier)}</span>
               <span class="level">${system.level}</span>
@@ -127,7 +123,10 @@ export class SystemList {
         <div class="details">
           ${this.getAsteroidHTML(system)}
           ${this.getJovianHTML(system)}
-          ${this.getBoxesHTML(system)}
+          ${system.asteroids.length > 0 || system.jovians.length > 0 ? '<hr>' : ''}
+          <div class="signals">
+          ${this.getSignalHTML(system)}
+          </div>
         </div>
       </li>
     `
@@ -144,6 +143,14 @@ export class SystemList {
     return html
   }
 
+  getSignalHTML(system: System) {
+    let html = ''
+    for (let signal of system.signals) {
+      html += `<div class="signal"><div class="sig-header"><span class="level ${signal.rarity}">${signal.level}</span>${signal.name}<span class="subtle">${signal.suffix}</span></div><div class="sig-details"></div></div>`
+    }
+    return html
+  }
+
   getJovianHTML(system: System) {
     let html = ''
     if (system.jovians.length > 0) {
@@ -151,24 +158,6 @@ export class SystemList {
         system.jovians,
         3
       )}</div>`
-    }
-    return html
-  }
-
-  getBoxesHTML(system: System) {
-    let html = ''
-    if (system.boxes.uncommon > 0 || system.boxes.rare > 0 || system.boxes.epic > 0) {
-      html += `<div class="detail-row"><img class="icon" src="${iconBox}"/>&nbsp;`
-      if (system.boxes.uncommon > 0) {
-        html += `<span class="box level uncommon">${system.boxes.uncommon}</span>&nbsp;&nbsp;`
-      }
-      if (system.boxes.rare > 0) {
-        html += `<span class="box level rare">${system.boxes.rare}</span>&nbsp;&nbsp;`
-      }
-      if (system.boxes.epic > 0) {
-        html += `<span class="box level epic">${system.boxes.epic}</span>&nbsp;&nbsp;`
-      }
-      html += `</div>`
     }
     return html
   }

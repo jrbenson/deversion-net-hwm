@@ -1,5 +1,5 @@
 import { parse } from 'papaparse'
-import { Asteroid, Jovian, Planet, System } from './system'
+import { Asteroid, Jovian, Planet, Signal, System, EnemyShip } from './system'
 
 // URL for retrieving the CSV data from Google Sheets
 const DATA_URL =
@@ -20,28 +20,26 @@ const COL_TIER_HEADER = 1
 const COL_FACTION = 1
 const COL_SYSTEM = 2
 const COL_LEVEL = 3
-const COL_JUMP_POWER = 4
-const COL_STATION = 5
-// const COL_SIGNAL_TOTAL = 6
-// const COL_SIGNALS = {
-//   'Cangacian Signal': rangeCount(6, 3, 2),
-//   'Tanoch Signal': rangeCount(12, 3, 2),
-//   'Yaot Signal': rangeCount(18, 3, 2),
-//   'Amassari Signal': rangeCount(24, 3, 2),
-//   'Kiithless Signal': rangeCount(30, 3, 2),
-//   'Relic Recovery': rangeCount(36, 3, 2),
-//   'Progenitor Signal': rangeCount(42, 3, 2),
-//   'Progenitor Activities': rangeCount(48, 3, 2),
-//   'Distress Call': rangeCount(54, 3, 2),
-//   'Traveling Trader': rangeCount(60, 3, 2),
-//   'Mining Ops': rangeCount(66, 3, 2),
-//   Other: rangeCount(72, 3, 2),
-// }
-const COL_BOXES = range(81, 83)
-const COL_ASTEROIDS = range(85, 103)
-const COL_JOVIANS = [rangeCount(108, 3, 1), rangeCount(111, 3, 1), rangeCount(114, 3, 1), rangeCount(117, 3, 1)]
-const COL_PLANETS = range(122, 135)
-const COL_MOONS = 136
+const COL_STATION = 4
+const COL_SIGNAL_TOTAL = 5
+const COL_SIGNALS = {
+  'Cangacian Signal': rangeCount(6, 3, 2),
+  'Tanoch Signal': rangeCount(12, 3, 2),
+  'Yaot Signal': rangeCount(18, 3, 2),
+  'Amassari Signal': rangeCount(24, 3, 2),
+  'Kiithless Signal': rangeCount(30, 3, 2),
+  'Relic Recovery': rangeCount(36, 3, 2),
+  'Progenitor Signal': rangeCount(42, 3, 2),
+  'Progenitor Activities': rangeCount(48, 3, 2),
+  'Distress Call': rangeCount(54, 3, 2),
+  'Traveling Trader': rangeCount(60, 3, 2),
+  'Mining Ops': rangeCount(66, 3, 2),
+  Other: rangeCount(72, 3, 2),
+}
+const COL_ASTEROIDS = range(79, 91)
+const COL_HIDDEN_LENGTH = 3
+const COL_JOVIANS = [rangeCount(96, 3, 1), rangeCount(99, 3, 1), rangeCount(102, 3, 1), rangeCount(105, 3, 1)]
+const COL_PLANETS = range(110, 123)
 
 const ROW_START = 5 - 1
 const ROW_END = 180
@@ -105,16 +103,74 @@ function parseData(data: string[][]) {
         name: String(row[COL_SYSTEM]).split('[')[0].trim(),
         level: Number(row[COL_LEVEL]),
         station: String(row[COL_STATION]).toLowerCase().includes('y'),
+        signals: [],
         asteroids: [],
         jovians: [],
         planets: [],
-        boxes: {
-          uncommon: Number(row[COL_BOXES[0]]),
-          rare: Number(row[COL_BOXES[1]]),
-          epic: Number(row[COL_BOXES[2]]),
-        },
       }
       systems.set(system.name, system)
+
+      for (let [type, scans] of Object.entries(COL_SIGNALS)) {
+        for (let scanIndex = 0; scanIndex < scans.length; scanIndex += 1) {
+          const signalTotal = Number(row[scans[scanIndex]])
+          if (!signalTotal || signalTotal <= 0) continue
+          const details = parseSignalDetails(row[scans[scanIndex] + 1])
+          for (let sigIndex = 0; sigIndex < signalTotal; sigIndex++) {
+            let name = `${type}`
+            let level = system.level
+            if (sigIndex < details.levels.length) {
+              level = details.levels[sigIndex]
+            }
+            let rarity = 'common'
+            if (sigIndex < details.rarities.length) {
+              rarity = details.rarities[sigIndex]
+            }
+            const signal: Signal = {
+              id: '',
+              name: name,
+              suffix: '',
+              type: type,
+              scan: scanIndex + 1,
+              level: level,
+              tier: system.tier,
+              rarity: rarity,
+              systemName: system.name,
+            }
+            system.signals.push(signal)
+          }
+        }
+      }
+
+      const nameCounts = new Map<string, number>()
+      for (let signal of system.signals) {
+        if (!nameCounts.has(signal.name)) {
+          nameCounts.set(signal.name, 1)
+        } else {
+          const count = nameCounts.get(signal.name)
+          if (count) {
+            nameCounts.set(signal.name, count + 1)
+          }
+        }
+      }
+      const curNameCounts = new Map<string, number>()
+      for (let signal of system.signals) {
+        const total = nameCounts.get(signal.name)
+        if (total && total > 1) {
+          if (!curNameCounts.has(signal.name)) {
+            curNameCounts.set(signal.name, 1)
+          } else {
+            const count = curNameCounts.get(signal.name)
+            if (count) {
+              curNameCounts.set(signal.name, count + 1)
+            }
+          }
+          signal.suffix = `${GREEK_LETTERS[(curNameCounts.get(signal.name) as number) - 1]}`
+        }
+      }
+
+      for (let signal of system.signals) {
+        signal.id = `${signal.systemName}-${signal.name} ${signal.suffix}`
+      }
 
       for (let asteroidIndex of COL_ASTEROIDS) {
         if (row[asteroidIndex] !== '') {
@@ -167,6 +223,14 @@ function parseData(data: string[][]) {
   return systems
 }
 
+export interface SignalDetails {
+  levels: number[]
+  rarities: string[]
+  enemy?: string[]
+  ally?: string[]
+  enemyWaves?: EnemyShip[][]
+}
+
 function parseRarity(text: string): string {
   let rarity = 'common'
   if (text.includes('U')) {
@@ -183,6 +247,20 @@ function parseRarity(text: string): string {
 
 function parseLevel(text: string): number {
   return Number(text.replace(/\D/g, ''))
+}
+
+function parseSignalDetails(details: string): SignalDetails {
+  const splitText = details.split(',')
+  const levels = []
+  const rarities = []
+  for (let text of splitText) {
+    levels.push(parseLevel(text))
+    rarities.push(parseRarity(text))
+  }
+  return {
+    levels: levels,
+    rarities: rarities,
+  }
 }
 
 export function getOresInAsteroids(asteroids: Asteroid[]) {
@@ -228,7 +306,7 @@ export function getOreLevelRangeHTML(asteroids: Asteroid[]) {
     if (!firstOre) {
       oreString += '&nbsp;&nbsp;'
     }
-    oreString += `<span class="ore ore${ore}">` + ore
+    oreString += ore
     const range = ranges.get(ore)
     if (range) {
       if (range.min == range.max) {
@@ -238,7 +316,6 @@ export function getOreLevelRangeHTML(asteroids: Asteroid[]) {
       }
     }
     firstOre = false
-    oreString += '</span>'
   }
   return oreString
 }
@@ -268,7 +345,7 @@ export function getJovianBandsHTML(jovians: Jovian[], maxTier = 2) {
   const tiers = getJovianBands(jovians)
   let html = ''
   for (let tier = 0; tier < maxTier; tier++) {
-    html += `<span class="jovian jovian${tier}">${tiers[tier].join('')} <span class="subtle">T${tier + 3}</span></span>`
+    html += `${tiers[tier].join('')}`
     if (tier < maxTier - 1) {
       html += ` <span class="subtle">⸱</span> `
     }
@@ -276,20 +353,12 @@ export function getJovianBandsHTML(jovians: Jovian[], maxTier = 2) {
   return html
 }
 
-export function joviansHasGas(jovians: Jovian[], tier: number, gas: string) {
-  for (let jovian of jovians) {
-    if (jovian.bands[tier - 3] == gas) {
-      return true
+export function getSignals(data: Map<string, System>) {
+  const signals: Signal[] = []
+  for (let system of data.values()) {
+    for (let signal of system.signals) {
+      signals.push(signal)
     }
   }
-  return false
-}
-
-export function asteroidsHaveOre(asteroids: Asteroid[], ore: string, level = 0) {
-  for (let asteroid of asteroids) {
-    if (asteroid.ore == ore && (level == 0 || asteroid.level <= level)) {
-      return true
-    }
-  }
-  return false
+  return signals
 }

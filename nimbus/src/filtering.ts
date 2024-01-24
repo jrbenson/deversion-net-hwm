@@ -1,46 +1,70 @@
-import { getSignals } from './data'
-import { Signal, System } from './system'
+import { asteroidsHaveOre, joviansHasGas } from './data'
+import { System } from './system'
 
-function getSignalCompareFunction(filters: Map<string, string>) {
-  function keepSignal(signal: Signal) {
+function getSystemCompareFunction(filters: Map<string, string>) {
+  function keepSystem(system: System) {
     let keep = true
     for (let [filterName, filterValue] of filters) {
       if (filterName == 'tier') {
-        if (!(Number(filterValue) == signal.tier)) {
+        if (!(Number(filterValue) == system.tier)) {
           keep = false
         }
       } else if (filterName == 'level') {
-        if (signal.level > Number(filterValue)) {
+        if (!filters.has('asteroid')) {
+          if (system.level > Number(filterValue)) {
+            keep = false
+          }
+        }
+      } else if (filterName == 'station') {
+        if (filterValue.toLowerCase() == '0' && !system.station) {
+          keep = false
+        } else if (filterValue.toLowerCase() == '1' && system.station) {
           keep = false
         }
-      } else if (filterName == 'rarity') {
-        if (filterValue !== signal.rarity) {
+      } else if (filterName == 'gas') {
+        const tier = Number(filterValue.substring(0, 1))
+        const gas = filterValue.substring(1)
+        if (!joviansHasGas(system.jovians, tier, gas)) {
           keep = false
         }
-      } else if (filterName == 'type') {
-      } else if (filterName == 'scan') {
-        if (signal.scan > Number(filterValue)) {
+      } else if (filterName == 'asteroid') {
+        let level = 0
+        if (filters.has('level')) {
+          level = Number(filters.get('level'))
+        }
+        if (!asteroidsHaveOre(system.asteroids, filterValue, level)) {
           keep = false
+        }
+      } else if (filterName == 'search') {
+        if (!system.name.toLowerCase().includes(filterValue.toLowerCase())) {
+          keep = false
+        }
+      } else if (filterName == 'boxes') {
+        const rarity = filterValue.toLowerCase()
+        switch (rarity) {
+          case 'uncommon':
+            if (isNaN(system.boxes.uncommon) || system.boxes.uncommon <= 0) {
+              keep = false
+            }
+            break
+          case 'rare':
+            if (isNaN(system.boxes.rare) || system.boxes.rare <= 0) {
+              keep = false
+            }
+            break
+          case 'epic':
+            if (isNaN(system.boxes.epic) || system.boxes.epic <= 0) {
+              keep = false
+            }
+            break
         }
       }
     }
     return keep
   }
-  return keepSignal
-}
-
-export function getFilteredSignals(data: Map<string, System>, filters: Map<string, string>) {
-  let signals = getSignals(data)
-  const keepSignal = getSignalCompareFunction(filters)
-  signals = signals.filter(keepSignal)
-  return signals
+  return keepSystem
 }
 
 export function getFilteredSystems(data: Map<string, System>, filters: Map<string, string>) {
-  let systems = Array.from(data.values())
-  const keepSignal = getSignalCompareFunction(filters)
-  systems = systems.filter((system) => {
-    return system.signals.some(keepSignal)
-  })
-  return systems
+  return Array.from(data.values()).filter(getSystemCompareFunction(filters))
 }

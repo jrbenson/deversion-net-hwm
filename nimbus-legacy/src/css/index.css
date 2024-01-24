@@ -1,0 +1,34 @@
+:root {
+  --selected-color: #f06122;
+  --common-color: #123d9b;
+  --uncommon-color: #3979aa;
+  --epic-color: #7030a0;
+  --rare-color: #70ad47;
+  --legendary-color: #ad8329;
+  --primary-text-color: #86d0fb;
+  --alt-text-color: #ffffff;
+  --contrast-text-color: #000000;
+}
+
+html {
+  overscroll-behavior: none;
+  font-family: 'PT Sans Narrow', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: var(--primary-text-color);
+}
+
+body,
+html {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  background-color: #1e3162;
+}
+
+body {
+  background-image: url('../../starfield.jpg');
+  background-size: cover;
+}

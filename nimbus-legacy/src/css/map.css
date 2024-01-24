@@ -1,0 +1,119 @@
+#map {
+  color: var(--alt-text-color);
+}
+
+#map .name {
+  font-size: 1rem;
+  text-transform: uppercase;
+  text-shadow: 0px 0px 2px #000000, 0px 0px 4px #000000;
+  padding-left: 0.2rem;
+}
+
+#map .lod-2 .name,
+#map .lod-3 .name,
+#map .lod-4 .name {
+  display: none;
+}
+
+#map .star {
+  fill: #ffffff;
+  /* filter: drop-shadow(0px 0px 5px #ffffff); */
+}
+
+#map .tier-wrapper {
+  display: inline-flex;
+  flex-flow: row nowrap;
+  padding: 0.1rem;
+  background-color: #123d9b;
+  outline: 1px solid #ffffff22;
+}
+
+#map .header-wrapper {
+  display: inline-block;
+  pointer-events: all;
+}
+
+#map div.selected .tier-wrapper {
+  background-color: var(--selected-color);
+}
+
+#map .tier {
+  display: inline-block;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  height: 1rem;
+  aspect-ratio: 1 / 1;
+}
+#map .lod-4:not(.selected) .tier {
+  font-size: 0.5rem;
+  height: 0.7rem;
+}
+
+#map .level {
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: #00000055;
+  height: 1rem;
+  aspect-ratio: 1 / 1;
+}
+
+#map .lod-3:not(.selected) .level,
+#map .lod-4:not(.selected) .level {
+  display: none;
+}
+
+#map .row {
+  display: inline-flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+#map .detail {
+  display: inline-flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  font-size: 0.75rem;
+  background-color: #00000055;
+  border-radius: 4px;
+  padding: 0 2px;
+}
+
+#map .lod-2 .detail,
+#map .lod-3 .detail,
+#map .lod-4 .detail {
+  display: none;
+}
+
+#map .container {
+  user-select: none;
+  display: flex;
+  flex-flow: column nowrap;
+  margin-top: -0.75rem;
+  transition: all 0.4s ease-in-out;
+  gap: 0.05rem;
+  pointer-events: none;
+}
+
+#map .hidden {
+  display: none;
+}
+
+#map .container.lod-2:not(.selected) {
+  margin-left: -1.5rem;
+}
+#map .container.lod-3:not(.selected) {
+  margin-left: -1.2rem;
+}
+#map .container.lod-4:not(.selected) {
+  margin-left: -1.05rem;
+}
+
+#map .icon {
+  width: 0.75rem;
+  height: 0.95rem;
+}

@@ -7,6 +7,7 @@ import mapSVG from '../map.svg'
 import { StarChart } from './starchart'
 import { SystemList } from './ui-system-list'
 import { getData } from './data'
+import { SignalList } from './ui-signal-list'
 import { getURLState, setURLState } from './persist'
 
 init()
@@ -21,46 +22,60 @@ async function init() {
     const systemListElem = document.querySelector('#system-list') as HTMLElement
     const systemList = new SystemList(systemListElem, data)
 
+    const signalListElem = document.querySelector('#signal-list') as HTMLElement
+    const signalList = new SignalList(signalListElem, data)
+
     systemList.on('select', (id: string) => {
       starChart.setSelected(id, false)
+      signalList.setSelected('__deselect__', false)
       saveState()
     })
 
     starChart.on('select', (id: string) => {
       systemList.setSelected(id, false)
+      signalList.setSelected('__deselect__', false)
       saveState()
     })
 
-    const btnRightPane = document.querySelector('#btn-right-pane') as HTMLElement
-    btnRightPane.addEventListener('click', () => {
-      const open = getPanelOpen()
-      setPanelOpen(!open)
+    signalList.on('select', (id: string) => {
+      const system = id.split('-')[0]
+      starChart.setSelected(system, false)
+      systemList.setSelected(system, false)
       saveState()
     })
 
-    function updateFilters() {
-      const filters = getFilters()
-      starChart.setFiltered(filters, data)
-      systemList.setFiltered(filters, data)
+    const btnSystemList = document.querySelector('#btn-system-list') as HTMLElement
+    const btnSignalList = document.querySelector('#btn-signal-list') as HTMLElement
+    btnSystemList.addEventListener('click', () => {
+      const panel = getOpenPanel()
+      if (panel == 'system') {
+        setOpenPanel('none')
+      } else {
+        setOpenPanel('system')
+      }
       saveState()
-    }
+    })
+    btnSignalList.addEventListener('click', () => {
+      const panel = getOpenPanel()
+      if (panel == 'signal') {
+        setOpenPanel('none')
+      } else {
+        setOpenPanel('signal')
+      }
+      saveState()
+    })
 
     const selects = document.querySelectorAll('select')
     if (selects) {
       selects.forEach((filter) => {
         const filterElem = filter as HTMLSelectElement
         filterElem.addEventListener('change', () => {
-          updateFilters()
+          const filters = getFilters()
+          starChart.setFiltered(filters, data)
+          signalList.setFiltered(filters, data)
+          systemList.setFiltered(filters, data)
+          saveState()
         })
-      })
-    }
-    const search = document.querySelector('#search') as HTMLInputElement
-    if (search) {
-      search.addEventListener('keyup', () => {
-        updateFilters()
-      })
-      search.addEventListener('search', () => {
-        updateFilters()
       })
     }
 
@@ -85,15 +100,7 @@ function getFilters() {
       filters.set(filterName, filterValue)
     }
   }
-  const searchFilter = document.querySelector('#search') as HTMLInputElement
-  if (searchFilter) {
-    const filterValue = searchFilter.value
-    if (filterValue) {
-      filters.set('search', filterValue)
-    }
-  }
 
-  console.log(filters)
   return filters
 }
 
@@ -107,20 +114,7 @@ function setFilters(filters: Map<string, string>) {
         filterElem.value = filterValue
       }
     } else {
-      if (filterElem.name == 'sort') {
-        filterElem.value = 'name'
-      } else {
-        filterElem.value = ''
-      }
-    }
-  }
-  const searchFilter = document.querySelector('#search') as HTMLInputElement
-  if (searchFilter) {
-    const searchQuery = filters.get(searchFilter.name)
-    if (searchQuery) {
-      searchFilter.value = searchQuery
-    } else {
-      searchFilter.value = ''
+      filterElem.value = ''
     }
   }
   const select = document.querySelector('select') as HTMLSelectElement
@@ -159,26 +153,38 @@ function setSelectedSignal(id: string) {
   }
 }
 
-function getPanelOpen() {
-  const rightPanelElem = document.querySelector('#right-panel') as HTMLElement
-  if (!rightPanelElem.classList.contains('hidden')) {
-    return true
+function getOpenPanel() {
+  const systemListElem = document.querySelector('#system-list') as HTMLElement
+  const signalListElem = document.querySelector('#signal-list') as HTMLElement
+  if (!systemListElem.classList.contains('hidden')) {
+    return 'system'
   }
-  return false
+  if (!signalListElem.classList.contains('hidden')) {
+    return 'signal'
+  }
+  return 'none'
 }
 
-function setPanelOpen(open: boolean) {
-  const rightPanelElem = document.querySelector('#right-panel') as HTMLElement
-  const searchBarElem = document.querySelector('#search-bar') as HTMLElement
-  const btnRightPane = document.querySelector('#btn-right-pane') as HTMLElement
-  if (open) {
-    rightPanelElem.classList.remove('hidden')
-    searchBarElem.classList.remove('hidden')
-    btnRightPane.classList.add('selected')
-  } else {
-    rightPanelElem.classList.add('hidden')
-    searchBarElem.classList.add('hidden')
-    btnRightPane.classList.remove('selected')
+function setOpenPanel(panel: string) {
+  const systemListElem = document.querySelector('#system-list') as HTMLElement
+  const signalListElem = document.querySelector('#signal-list') as HTMLElement
+  const btnSystemList = document.querySelector('#btn-system-list') as HTMLElement
+  const btnSignalList = document.querySelector('#btn-signal-list') as HTMLElement
+  if (!panel || panel == 'system') {
+    signalListElem.classList.add('hidden')
+    btnSignalList.classList.remove('selected')
+    systemListElem.classList.remove('hidden')
+    btnSystemList.classList.add('selected')
+  } else if (panel == 'signal') {
+    signalListElem.classList.remove('hidden')
+    btnSignalList.classList.add('selected')
+    systemListElem.classList.add('hidden')
+    btnSystemList.classList.remove('selected')
+  } else if (panel == 'none') {
+    signalListElem.classList.add('hidden')
+    btnSignalList.classList.remove('selected')
+    systemListElem.classList.add('hidden')
+    btnSystemList.classList.remove('selected')
   }
 }
 
@@ -186,7 +192,7 @@ interface State {
   filters: Map<string, string>
   selectedSystem: string
   selectedSignal: string
-  panel: boolean
+  panel: string
 }
 
 function getState() {
@@ -194,7 +200,7 @@ function getState() {
     filters: Object.fromEntries(getFilters()),
     selectedSystem: getSelectedSystem(),
     selectedSignal: getSelectedSignal(),
-    panel: getPanelOpen(),
+    panel: getOpenPanel(),
   }
 }
 
@@ -216,7 +222,7 @@ function setState(state: State) {
   } else {
     setSelectedSystem(state.selectedSystem)
   }
-  setPanelOpen(state.panel)
+  setOpenPanel(state.panel)
 }
 
 function loadState() {
