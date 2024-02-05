@@ -28,6 +28,9 @@ async function init() {
 
     starChart.on('select', (id: string) => {
       systemList.setSelected(id, false)
+      if (getSelectedSystem()) {
+        setPanelOpen(true)
+      }
       saveState()
     })
 
@@ -93,7 +96,7 @@ function getFilters() {
     }
   }
 
-  console.log(filters)
+  // console.log(filters)
   return filters
 }
 
@@ -144,21 +147,6 @@ function setSelectedSystem(id: string) {
   }
 }
 
-function getSelectedSignal() {
-  const signalElem = document.querySelector('#signal-list li.selected') as HTMLElement
-  if (signalElem) {
-    return signalElem.dataset.id
-  }
-  return ''
-}
-
-function setSelectedSignal(id: string) {
-  const signalElem = document.querySelector(`#signal-list li[data-id="${id}"] .header`) as HTMLElement
-  if (signalElem) {
-    signalElem.dispatchEvent(new Event('click'))
-  }
-}
-
 function getPanelOpen() {
   const rightPanelElem = document.querySelector('#right-panel') as HTMLElement
   if (!rightPanelElem.classList.contains('hidden')) {
@@ -185,7 +173,6 @@ function setPanelOpen(open: boolean) {
 interface State {
   filters: Map<string, string>
   selectedSystem: string
-  selectedSignal: string
   panel: boolean
 }
 
@@ -193,14 +180,13 @@ function getState() {
   return {
     filters: Object.fromEntries(getFilters()),
     selectedSystem: getSelectedSystem(),
-    selectedSignal: getSelectedSignal(),
     panel: getPanelOpen(),
   }
 }
 
 function saveState() {
   setURLState(getState())
-  console.log(getState().selectedSystem)
+  // console.log(getState().selectedSystem)
 }
 
 function setState(state: State) {
@@ -209,11 +195,7 @@ function setState(state: State) {
     filters = new Map(Object.entries(state.filters))
   }
   setFilters(filters)
-  if (state.selectedSystem && state.selectedSignal) {
-    setSelectedSignal(state.selectedSignal)
-  } else if (state.selectedSignal) {
-    setSelectedSignal(state.selectedSignal)
-  } else {
+  if (state.selectedSystem) {
     setSelectedSystem(state.selectedSystem)
   }
   setPanelOpen(state.panel)

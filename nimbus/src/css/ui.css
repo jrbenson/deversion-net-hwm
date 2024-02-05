@@ -41,6 +41,19 @@ h5 {
   font-size: 1.067rem;
 }
 
+a {
+  color: var(--primary-text-color);
+  text-decoration: none;
+  font-family: 'PT Sans Narrow', sans-serif;
+  font-size: x-small;
+  pointer-events: all;
+}
+
+a:hover {
+  color: var(--alt-text-color);
+  text-decoration: underline;
+}
+
 /* font-family: 'PT Sans Narrow', sans-serif;
 font-family: 'Jura', sans-serif; */
 

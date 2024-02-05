@@ -16,7 +16,14 @@
     <div id="ui">
       <div id="top">
         <span class="flow-row">
-          <h1>Nimbus <span class="subtle">1.8</span></h1>
+          <h1>
+            Nimbus <span class="subtle">1.8.5</span>
+            <a
+              target="_blank"
+              href="https://docs.google.com/spreadsheets/d/1eTCM4KNb7lv7mtFmMx9WVOud2pg7EnqcDP40n9S-5go/edit?usp=sharing"
+              >source</a
+            >
+          </h1>
         </span>
         <span class="toolbar right">
           <div id="search-bar" class="toolbar hidden">
@@ -123,12 +130,33 @@
             </select>
           </span>
           <span class="field">
-            <label for="boxes">Boxes</label>
-            <select name="boxes" id="filter-boxes" title="The rarity of boxes you want to find in the system.">
+            <label for="finds">Finds</label>
+            <select name="finds" id="filter-finds" title="The type and rarity of finds to search for.">
               <option value="" selected>-</option>
-              <option value="uncommon">Unc</option>
-              <option value="rare">Rare</option>
-              <option value="epic">Epic</option>
+              <optgroup label="Capsule">
+                <option value="Capsule-uncommon">Unc</option>
+                <option value="Capsule-rare">Rare</option>
+                <option value="Capsule-epic">Epic</option>
+              </optgroup>
+              <optgroup label="Mining Cargo">
+                <option value="Mining Cargo-uncommon">Unc</option>
+                <option value="Mining Cargo-rare">Rare</option>
+                <option value="Mining Cargo-epic">Epic</option>
+              </optgroup>
+              <optgroup label="Shipwreck">
+                <option value="Shipwreck-uncommon">Unc</option>
+                <option value="Shipwreck-rare">Rare</option>
+                <option value="Shipwreck-epic">Epic</option>
+              </optgroup>
+              <optgroup label="Box">
+                <option value="Box-uncommon">Unc</option>
+                <option value="Box-rare">Rare</option>
+                <option value="Box-epic">Epic</option>
+              </optgroup>
+              <option value="Freighter-uncommon">Freighter</option>
+              <option value="Geode-rare">Geode</option>
+              <option value="Probe-rare">Probe</option>
+              <option value="Treasure-epic">Treasure</option>
             </select>
           </span>
           <!-- <select name="rarity" id="filter-rarity">

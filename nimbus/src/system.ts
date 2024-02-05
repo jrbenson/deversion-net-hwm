@@ -13,7 +13,7 @@ export interface Planet {
   color?: string
 }
 
-export interface Boxes {
+export interface FindCounts {
   uncommon: number
   rare: number
   epic: number
@@ -28,5 +28,5 @@ export interface System {
   asteroids: Asteroid[]
   jovians: Jovian[]
   planets: Planet[]
-  boxes: Boxes
+  finds: Map<string, FindCounts>
 }

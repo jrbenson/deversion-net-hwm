@@ -1,5 +1,5 @@
 import { parse } from 'papaparse'
-import { Asteroid, Jovian, Planet, System } from './system'
+import { Asteroid, FindCounts, Jovian, Planet, System } from './system'
 
 // URL for retrieving the CSV data from Google Sheets
 const DATA_URL =
@@ -37,11 +37,21 @@ const COL_STATION = 5
 //   'Mining Ops': rangeCount(66, 3, 2),
 //   Other: rangeCount(72, 3, 2),
 // }
-const COL_BOXES = range(81, 83)
-const COL_ASTEROIDS = range(85, 103)
-const COL_JOVIANS = [rangeCount(108, 3, 1), rangeCount(111, 3, 1), rangeCount(114, 3, 1), rangeCount(117, 3, 1)]
-const COL_PLANETS = range(122, 135)
-const COL_MOONS = 136
+// const COL_BOXES = range(81, 83)
+const COL_FINDS = {
+  'Mining Cargo': range(81, 83),
+  Capsule: range(84, 86),
+  Shipwreck: range(87, 89),
+  Box: range(90, 92),
+  Freighter: [93],
+  Geode: [94],
+  Probe: [95],
+  Treasure: [96],
+}
+const COL_ASTEROIDS = range(98, 116)
+const COL_JOVIANS = [rangeCount(121, 3, 1), rangeCount(124, 3, 1), rangeCount(127, 3, 1), rangeCount(130, 3, 1)]
+const COL_PLANETS = range(135, 148)
+const COL_MOONS = 149
 
 const ROW_START = 5 - 1
 const ROW_END = 180
@@ -108,13 +118,32 @@ function parseData(data: string[][]) {
         asteroids: [],
         jovians: [],
         planets: [],
-        boxes: {
-          uncommon: Number(row[COL_BOXES[0]]),
-          rare: Number(row[COL_BOXES[1]]),
-          epic: Number(row[COL_BOXES[2]]),
-        },
+        finds: new Map(),
       }
       systems.set(system.name, system)
+
+      for (const [find, indices] of Object.entries(COL_FINDS)) {
+        const findCounts: FindCounts = {
+          uncommon: 0,
+          rare: 0,
+          epic: 0,
+        }
+        if (indices.length === 3) {
+          findCounts.uncommon = Number(row[indices[0]])
+          findCounts.rare = Number(row[indices[1]])
+          findCounts.epic = Number(row[indices[2]])
+        } else {
+          const count = Number(row[indices[0]])
+          if (find === 'Freighter') {
+            findCounts.uncommon = count
+          } else if (find === 'Geode' || find === 'Probe') {
+            findCounts.rare = count
+          } else if (find === 'Treasure') {
+            findCounts.epic = count
+          }
+        }
+        system.finds.set(find, findCounts)
+      }
 
       for (let asteroidIndex of COL_ASTEROIDS) {
         if (row[asteroidIndex] !== '') {
@@ -288,6 +317,15 @@ export function joviansHasGas(jovians: Jovian[], tier: number, gas: string) {
 export function asteroidsHaveOre(asteroids: Asteroid[], ore: string, level = 0) {
   for (let asteroid of asteroids) {
     if (asteroid.ore == ore && (level == 0 || asteroid.level <= level)) {
+      return true
+    }
+  }
+  return false
+}
+
+export function hasAnyFinds(system: System) {
+  for (let [find, counts] of system.finds) {
+    if (counts.uncommon > 0 || counts.rare > 0 || counts.epic > 0) {
       return true
     }
   }

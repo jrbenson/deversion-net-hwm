@@ -39,25 +39,48 @@ function getSystemCompareFunction(filters: Map<string, string>) {
         if (!system.name.toLowerCase().includes(filterValue.toLowerCase())) {
           keep = false
         }
-      } else if (filterName == 'boxes') {
-        const rarity = filterValue.toLowerCase()
-        switch (rarity) {
-          case 'uncommon':
-            if (isNaN(system.boxes.uncommon) || system.boxes.uncommon <= 0) {
-              keep = false
+      } else if (filterName == 'finds') {
+        const [findStr, rarity] = filterValue.split('-')
+        if (findStr && rarity) {
+          const find = system.finds.get(findStr)
+          if (find) {
+            switch (rarity.toLowerCase()) {
+              case 'uncommon':
+                if (isNaN(find.uncommon) || find.uncommon <= 0) {
+                  keep = false
+                }
+                break
+              case 'rare':
+                if (isNaN(find.rare) || find.rare <= 0) {
+                  keep = false
+                }
+                break
+              case 'epic':
+                if (isNaN(find.epic) || find.epic <= 0) {
+                  keep = false
+                }
+                break
             }
-            break
-          case 'rare':
-            if (isNaN(system.boxes.rare) || system.boxes.rare <= 0) {
-              keep = false
-            }
-            break
-          case 'epic':
-            if (isNaN(system.boxes.epic) || system.boxes.epic <= 0) {
-              keep = false
-            }
-            break
+          }
         }
+        // const rarity = filterValue.toLowerCase()
+        // switch (rarity) {
+        //   case 'uncommon':
+        //     if (isNaN(system.boxes.uncommon) || system.boxes.uncommon <= 0) {
+        //       keep = false
+        //     }
+        //     break
+        //   case 'rare':
+        //     if (isNaN(system.boxes.rare) || system.boxes.rare <= 0) {
+        //       keep = false
+        //     }
+        //     break
+        //   case 'epic':
+        //     if (isNaN(system.boxes.epic) || system.boxes.epic <= 0) {
+        //       keep = false
+        //     }
+        //     break
+        // }
       }
     }
     return keep

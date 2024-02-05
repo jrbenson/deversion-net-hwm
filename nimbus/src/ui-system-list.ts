@@ -1,4 +1,4 @@
-import { getOreLevelRangeHTML, getJovianBandsHTML } from './data'
+import { getOreLevelRangeHTML, getJovianBandsHTML, hasAnyFinds } from './data'
 import { System } from './system'
 import { numberToRomanNumeral } from './utils'
 import { getFilteredSystems } from './filtering'
@@ -107,10 +107,9 @@ export class SystemList {
       system.asteroids.length > 0 ? `<img class="icon" src="${iconMining}"/>` : `<img class="icon" src="${iconBlank}"/>`
     const jovianIndicatorHTML =
       system.jovians.length > 0 ? `<img class="icon" src="${iconJovian}"/>` : `<img class="icon" src="${iconBlank}"/>`
-    const boxesIndicatorHTML =
-      system.boxes.uncommon > 0 || system.boxes.rare > 0 || system.boxes.epic > 0
-        ? `<img class="icon" src="${iconBox}"/>`
-        : `<img class="icon" src="${iconBlank}"/>`
+    const boxesIndicatorHTML = hasAnyFinds(system)
+      ? `<img class="icon" src="${iconBox}"/>`
+      : `<img class="icon" src="${iconBlank}"/>`
 
     let html = `
       <li data-id="${system.name}">
@@ -127,7 +126,7 @@ export class SystemList {
         <div class="details">
           ${this.getAsteroidHTML(system)}
           ${this.getJovianHTML(system)}
-          ${this.getBoxesHTML(system)}
+          ${this.getFindsHTML(system)}
         </div>
       </li>
     `
@@ -155,20 +154,24 @@ export class SystemList {
     return html
   }
 
-  getBoxesHTML(system: System) {
+  getFindsHTML(system: System) {
     let html = ''
-    if (system.boxes.uncommon > 0 || system.boxes.rare > 0 || system.boxes.epic > 0) {
-      html += `<div class="detail-row"><img class="icon" src="${iconBox}"/>&nbsp;`
-      if (system.boxes.uncommon > 0) {
-        html += `<span class="box level uncommon">${system.boxes.uncommon}</span>&nbsp;&nbsp;`
+    if (hasAnyFinds(system)) {
+      for (let [find, counts] of system.finds) {
+        if (counts.uncommon > 0 || counts.rare > 0 || counts.epic > 0) {
+          html += `<div class="detail-row"><img class="icon" src="${iconBox}"/>&nbsp;${find}&nbsp;&nbsp; `
+          if (counts.uncommon > 0) {
+            html += `<span class="box level uncommon">${counts.uncommon}</span>&nbsp;&nbsp;`
+          }
+          if (counts.rare > 0) {
+            html += `<span class="box level rare">${counts.rare}</span>&nbsp;&nbsp;`
+          }
+          if (counts.epic > 0) {
+            html += `<span class="box level epic">${counts.epic}</span>&nbsp;&nbsp;`
+          }
+          html += `</div>`
+        }
       }
-      if (system.boxes.rare > 0) {
-        html += `<span class="box level rare">${system.boxes.rare}</span>&nbsp;&nbsp;`
-      }
-      if (system.boxes.epic > 0) {
-        html += `<span class="box level epic">${system.boxes.epic}</span>&nbsp;&nbsp;`
-      }
-      html += `</div>`
     }
     return html
   }
